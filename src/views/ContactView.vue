@@ -3,6 +3,8 @@ import { reactive, ref, onBeforeUnmount } from 'vue'
 import { site } from '../config/site'
 import RevealOnScroll from '../components/RevealOnScroll.vue'
 
+const demoMode = import.meta.env.VITE_DEMO_MODE === 'true'
+
 const form = reactive({
   name: '',
   phone: '',
@@ -30,6 +32,12 @@ async function onSubmit() {
   if (!validate()) return
   submitting.value = true
   try {
+    if (demoMode) {
+      await new Promise((resolve) => window.setTimeout(resolve, 400))
+      submitted.value = true
+      return
+    }
+
     const res = await fetch('/api/contact', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -145,11 +153,15 @@ onBeforeUnmount(() => window.clearTimeout(copiedTimer))
               <div v-if="submitted" class="form-success">
                 <span class="success-icon" aria-hidden="true"></span>
                 <h3>提交成功</h3>
-                <p>感谢您的咨询，我们会在 24 小时内与您联系。</p>
+                <p v-if="demoMode">演示提交完成：没有发送或保存您填写的信息。正式咨询请使用正式站点。</p>
+                <p v-else>感谢您的咨询，我们会在 24 小时内与您联系。</p>
                 <button type="button" class="btn btn-ghost" @click="resetForm">再填一次</button>
               </div>
 
               <template v-else>
+                <p v-if="demoMode" class="demo-notice" role="status">
+                  GitHub Pages 演示版：表单只模拟提交，不会发送或保存信息。请勿填写真实个人资料。
+                </p>
                 <div class="form-row">
                   <div class="form-field">
                     <label for="name">称呼 *</label>
@@ -218,7 +230,7 @@ onBeforeUnmount(() => window.clearTimeout(copiedTimer))
                 <div v-if="errorMsg" class="form-error" role="alert">{{ errorMsg }}</div>
 
                 <button type="submit" class="btn btn-primary form-submit" :disabled="submitting">
-                  {{ submitting ? '提交中…' : '提交需求' }}
+                  {{ submitting ? (demoMode ? '模拟提交中…' : '提交中…') : (demoMode ? '提交演示（不会保存）' : '提交需求') }}
                 </button>
               </template>
             </form>
@@ -350,6 +362,17 @@ onBeforeUnmount(() => window.clearTimeout(copiedTimer))
   font-size: 22px;
   font-weight: 800;
   margin-bottom: 24px;
+}
+
+.demo-notice {
+  margin: -8px 0 22px;
+  padding: 12px 14px;
+  border: 1px solid rgba(251, 191, 36, 0.28);
+  border-radius: 10px;
+  background: rgba(251, 191, 36, 0.08);
+  color: #f5d783;
+  font-size: 13px;
+  line-height: 1.7;
 }
 
 .form-row {

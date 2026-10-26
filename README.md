@@ -56,9 +56,23 @@ npm start            # 启动服务：同时托管 dist 静态文件 + API，默
 
 ## 部署
 
+### GitHub Pages 体验版（用于预览和试用）
+
+仓库已经配置 GitHub Actions 自动发布静态体验版。它可以在 GitHub Pages 上预览页面、导航、案例筛选和表单交互；由于 Pages 不运行 Express/SQLite，表单只会模拟提交，不会发送或保存填写内容。需要真正收集咨询时，请使用下面的 Node.js 正式部署方式。
+
+首次启用时，在 GitHub 仓库中操作一次：
+
+1. 打开仓库 `Settings`（设置）。
+2. 左侧选择 `Pages`。
+3. 在 `Build and deployment`（构建与部署）区域，将 `Source`（来源）改为 `GitHub Actions`。
+4. 回到 `Actions` 页面，打开 `Deploy GitHub Pages Demo` 工作流；如果它没有自动运行，点 `Run workflow`。
+5. 等待 `build` 和 `deploy` 两项都显示绿色成功标记，再回到 `Settings → Pages` 打开网站地址。通常地址为 `https://bin430451-beep.github.io/web-/`。
+
+之后每次推送到 `main`，体验版都会自动更新。GitHub Actions 中的 `Build Check` 只检查项目能否构建；`Deploy GitHub Pages Demo` 才负责发布体验版。
+
 ### 推荐：使用带持久化磁盘的云平台
 
-这是操作最少的方式。选择支持 **Node.js 后端、持久化磁盘和 HTTPS** 的 Web Service（例如 Railway、Render 或同类平台）。不要选择“静态网站 / Static Site”：本项目的联系表单需要同时运行 Node.js 服务端和 SQLite 数据库，GitHub Pages 不能运行后端。
+这是发布正式网站的推荐方式。选择支持 **Node.js 后端、持久化磁盘和 HTTPS** 的 Web Service（例如 Railway、Render 或同类平台）。请勿把 GitHub Pages 或普通“静态网站 / Static Site”当作正式站：它们不能运行本项目的 Express 服务和 SQLite 数据库，咨询表单也就无法真正入库。
 
 #### 第一步：把 GitHub 仓库导入云平台
 
@@ -135,12 +149,12 @@ docker run -d --name media-site --restart unless-stopped -p 127.0.0.1:3000:3000 
 - **重启后咨询记录消失：** `DB_PATH` 没有指向持久化磁盘，或 Docker 启动时没有挂载 `media-site-data` 卷。
 - **记录查询返回 503：** 设置 `CONTACT_ADMIN_TOKEN`，值至少 32 个字符，然后重新部署。
 - **限流似乎把所有访客算在一起：** 应用位于反向代理后时，按平台文档配置正确的 `TRUST_PROXY` 跳数。
-- **GitHub Pages 无法提交表单：** GitHub Pages 只能托管静态文件；请改用上面的 Node.js 云平台或 Docker 部署。
+- **GitHub Pages 表单看起来提交成功：** 这是体验版的模拟交互，不会发送或保存数据；正式收集咨询请改用上面的 Node.js 云平台或 Docker 部署。
+- **GitHub Pages 部署失败并提示 404：** 检查仓库 `Settings → Pages → Build and deployment → Source` 是否设置为 `GitHub Actions`，然后从 `Actions` 页面重新运行 `Deploy GitHub Pages Demo`。
 
 ## GitHub Actions
 
-push 到 `main` 自动执行前端构建校验（`npm run build`），通过即代表代码可交付。
-（Node 后端无法运行在 GitHub Pages 上，部署请使用上述方式。）
+push 到 `main` 会运行 `Build Check` 构建校验，并运行 `Deploy GitHub Pages Demo` 更新静态体验站。Node 后端无法运行在 GitHub Pages 上，正式部署请使用上面的 Node.js 云平台或 Docker 方式。
 
 ## 替换占位内容（重要）
 
