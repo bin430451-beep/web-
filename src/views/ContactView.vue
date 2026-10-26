@@ -157,6 +157,7 @@ onBeforeUnmount(() => window.clearTimeout(copiedTimer))
                       id="name"
                       v-model="form.name"
                       type="text"
+                      maxlength="50"
                       autocomplete="name"
                       placeholder="怎么称呼您"
                       :aria-invalid="Boolean(errors.name)"
@@ -170,6 +171,7 @@ onBeforeUnmount(() => window.clearTimeout(copiedTimer))
                       id="phone"
                       v-model="form.phone"
                       type="tel"
+                      maxlength="11"
                       inputmode="numeric"
                       autocomplete="tel"
                       placeholder="11 位手机号"
@@ -183,7 +185,7 @@ onBeforeUnmount(() => window.clearTimeout(copiedTimer))
                 <div class="form-row">
                   <div class="form-field">
                     <label for="company">公司 / 品牌</label>
-                    <input id="company" v-model="form.company" type="text" placeholder="选填" />
+                    <input id="company" v-model="form.company" type="text" maxlength="100" placeholder="选填" />
                   </div>
                   <div class="form-field">
                     <label for="service">感兴趣的服务</label>
@@ -205,6 +207,7 @@ onBeforeUnmount(() => window.clearTimeout(copiedTimer))
                     id="message"
                     v-model="form.message"
                     rows="4"
+                    maxlength="2000"
                     placeholder="简单描述您的品牌与目标，例如：我们是美妆品牌，希望 3 个月内账号涨粉 20 万"
                     :aria-invalid="Boolean(errors.message)"
                     aria-describedby="message-error"

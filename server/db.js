@@ -1,5 +1,5 @@
 import Database from 'better-sqlite3'
-import { mkdirSync } from 'node:fs'
+import { chmodSync, mkdirSync } from 'node:fs'
 import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
@@ -12,6 +12,7 @@ const dbPath = process.env.DB_PATH || join(dataDir, 'messages.db')
 mkdirSync(dirname(dbPath), { recursive: true })
 
 const db = new Database(dbPath)
+if (process.platform !== 'win32') chmodSync(dbPath, 0o600)
 db.pragma('journal_mode = WAL')
 
 // 咨询记录表
@@ -28,21 +29,39 @@ db.exec(`
   )
 `)
 
+db.exec('CREATE INDEX IF NOT EXISTS idx_messages_ip_created_at ON messages (ip, created_at)')
+
+const countRecentMessages = db.prepare(
+  `SELECT COUNT(*) AS count FROM messages
+   WHERE ip = @ip AND created_at >= datetime('now', 'localtime', '-1 hour')`
+)
+const insertMessageStatement = db.prepare(
+  `INSERT INTO messages (name, phone, company, service, message, ip)
+   VALUES (@name, @phone, @company, @service, @message, @ip)`
+)
+const insertRateLimitedMessage = db.transaction(({ message, maxPerHour }) => {
+  const { count } = countRecentMessages.get({ ip: message.ip })
+  if (count >= maxPerHour) return false
+  insertMessageStatement.run(message)
+  return true
+})
+
 /**
- * 写入一条咨询记录（参数化查询，防注入）
+ * Atomically enforce the per-IP limit and insert the message.
  */
-export function insertMessage({ name, phone, company, service, message, ip }) {
-  const stmt = db.prepare(
-    `INSERT INTO messages (name, phone, company, service, message, ip)
-     VALUES (@name, @phone, @company, @service, @message, @ip)`
-  )
-  return stmt.run({ name, phone, company, service, message, ip })
+export function submitMessage({ name, phone, company, service, message, ip }, maxPerHour = 10) {
+  return insertRateLimitedMessage.immediate({
+    message: { name, phone, company, service, message, ip },
+    maxPerHour
+  })
 }
 
 /**
  * 按时间倒序查询咨询记录
  */
 export function listMessages(limit = 50) {
-  const stmt = db.prepare('SELECT * FROM messages ORDER BY id DESC LIMIT ?')
+  const stmt = db.prepare(
+    'SELECT id, name, phone, company, service, message, created_at FROM messages ORDER BY id DESC LIMIT ?'
+  )
   return stmt.all(limit)
 }

@@ -13,6 +13,9 @@ data/
 *.db-shm
 
 # 本地环境
+.env
+.env.*
+!.env.example
 *.local
 .env.local
 .env.*.local
