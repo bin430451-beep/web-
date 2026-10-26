@@ -1,6 +1,17 @@
 <script setup>
+import { ref, computed } from 'vue'
 import { cases } from '../config/content'
 import RevealOnScroll from '../components/RevealOnScroll.vue'
+
+const activeCategory = ref('全部')
+
+const categories = computed(() => ['全部', ...new Set(cases.map((c) => c.category))])
+
+const filteredCases = computed(() =>
+  activeCategory.value === '全部'
+    ? cases
+    : cases.filter((c) => c.category === activeCategory.value)
+)
 </script>
 
 <template>
@@ -22,8 +33,25 @@ import RevealOnScroll from '../components/RevealOnScroll.vue'
     <!-- 案例网格 -->
     <section class="section">
       <div class="container">
+        <!-- 分类筛选 -->
+        <div class="filter-bar">
+          <button
+            v-for="cat in categories"
+            :key="cat"
+            class="filter-btn"
+            :class="{ 'is-active': activeCategory === cat }"
+            @click="activeCategory = cat"
+          >
+            {{ cat }}
+          </button>
+        </div>
+
         <div class="case-grid">
-          <RevealOnScroll v-for="(item, i) in cases" :key="item.title" :delay="(i % 3) * 70">
+          <RevealOnScroll
+            v-for="(item, i) in filteredCases"
+            :key="item.title"
+            :delay="(i % 3) * 70"
+          >
             <article class="case-card">
               <div class="case-cover" :class="item.tone">
                 <span class="case-play" aria-hidden="true"></span>
@@ -40,6 +68,8 @@ import RevealOnScroll from '../components/RevealOnScroll.vue'
             </article>
           </RevealOnScroll>
         </div>
+
+        <div v-if="!filteredCases.length" class="case-empty">该分类暂无案例，看看其他分类吧。</div>
 
         <div class="case-note">
           <RevealOnScroll>
@@ -94,6 +124,38 @@ import RevealOnScroll from '../components/RevealOnScroll.vue'
   color: var(--text-sub);
   font-size: 16px;
   line-height: 1.9;
+}
+
+/* 筛选栏 */
+.filter-bar {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-bottom: 44px;
+}
+
+.filter-btn {
+  padding: 8px 20px;
+  border-radius: 999px;
+  font-size: 14px;
+  cursor: pointer;
+  color: var(--text-sub);
+  border: 1px solid var(--border-soft);
+  background: var(--bg-card);
+  transition: all 0.25s ease;
+}
+
+.filter-btn:hover {
+  color: var(--text-main);
+  border-color: rgba(34, 211, 238, 0.45);
+}
+
+.filter-btn.is-active {
+  color: #0b0f1a;
+  font-weight: 600;
+  border-color: transparent;
+  background: linear-gradient(135deg, var(--accent-cyan), var(--accent-coral));
 }
 
 /* 网格 */
@@ -212,6 +274,12 @@ import RevealOnScroll from '../components/RevealOnScroll.vue'
   color: var(--text-sub);
   font-size: 14px;
   line-height: 1.8;
+}
+
+.case-empty {
+  text-align: center;
+  padding: 60px 0;
+  color: var(--text-dim);
 }
 
 .case-note {

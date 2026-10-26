@@ -1,6 +1,7 @@
 <script setup>
 import AppNav from './components/AppNav.vue'
 import AppFooter from './components/AppFooter.vue'
+import BackToTop from './components/BackToTop.vue'
 </script>
 
 <template>
@@ -14,6 +15,7 @@ import AppFooter from './components/AppFooter.vue'
       </router-view>
     </main>
     <AppFooter />
+    <BackToTop />
   </div>
 </template>
 

@@ -60,14 +60,27 @@ onBeforeUnmount(() => {
         <span class="glow glow-1"></span>
         <span class="glow glow-2"></span>
         <span class="grid-lines"></span>
+        <div class="phone-deco" aria-hidden="true">
+          <div class="phone-frame">
+            <div class="phone-screen">
+              <span class="phone-bar"></span>
+              <span class="phone-row"></span>
+              <span class="phone-row short"></span>
+              <span class="phone-play-btn"></span>
+              <span class="phone-heart"></span>
+            </div>
+          </div>
+          <span class="phone-badge">12.6w 赞</span>
+        </div>
       </div>
       <div class="container hero-inner">
         <RevealOnScroll>
-          <p class="hero-kicker">短视频内容生态服务商</p>
-          <h1 class="hero-title">
-            {{ site.brand.slogan }}
-          </h1>
+          <p class="hero-kicker">专注内容 · 驱动增长</p>
+          <h1 class="hero-title">{{ site.brand.slogan }}</h1>
           <p class="hero-desc">{{ site.brand.intro }}</p>
+          <div class="platform-chips">
+            <span v-for="p in site.platforms" :key="p" class="platform-chip">{{ p }}</span>
+          </div>
           <div class="hero-actions">
             <router-link to="/cases" class="btn btn-primary">查看案例</router-link>
             <router-link to="/contact" class="btn btn-ghost">联系我们</router-link>
@@ -75,6 +88,18 @@ onBeforeUnmount(() => {
         </RevealOnScroll>
       </div>
     </section>
+
+    <!-- ===== 品牌滚动条 ===== -->
+    <div class="marquee" aria-hidden="true">
+      <div class="marquee-track">
+        <span v-for="n in 2" :key="n" class="marquee-group">
+          <template v-for="(svc, i) in serviceList" :key="i">
+            <em>{{ svc.title }}</em>
+            <i>✦</i>
+          </template>
+        </span>
+      </div>
+    </div>
 
     <!-- ===== 核心数据 ===== -->
     <section class="stats-band">
@@ -208,6 +233,7 @@ onBeforeUnmount(() => {
   border-radius: 50%;
   filter: blur(90px);
   opacity: 0.5;
+  animation: glow-breathe 9s ease-in-out infinite;
 }
 
 .glow-1 {
@@ -224,6 +250,143 @@ onBeforeUnmount(() => {
   bottom: -160px;
   right: -100px;
   background: rgba(251, 113, 133, 0.32);
+  animation-delay: 3s;
+}
+
+@keyframes glow-breathe {
+  0%,
+  100% {
+    opacity: 0.4;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.62;
+    transform: scale(1.08);
+  }
+}
+
+/* 竖屏手机装饰 */
+.phone-deco {
+  position: absolute;
+  right: clamp(20px, 6vw, 110px);
+  top: 50%;
+  transform: translateY(-42%);
+  display: none;
+  z-index: 0;
+}
+
+.phone-frame {
+  width: 132px;
+  height: 262px;
+  border-radius: 26px;
+  padding: 8px;
+  background: linear-gradient(160deg, rgba(34, 211, 238, 0.5), rgba(251, 113, 133, 0.5));
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.45);
+  animation: phone-float 6s ease-in-out infinite;
+}
+
+.phone-screen {
+  width: 100%;
+  height: 100%;
+  border-radius: 19px;
+  background:
+    radial-gradient(circle at 30% 20%, rgba(34, 211, 238, 0.35), transparent 55%),
+    radial-gradient(circle at 70% 80%, rgba(251, 113, 133, 0.3), transparent 55%),
+    #0d1322;
+  padding: 12px 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  overflow: hidden;
+  position: relative;
+}
+
+.phone-bar {
+  height: 4px;
+  width: 42px;
+  border-radius: 4px;
+  background: rgba(255, 255, 255, 0.28);
+  margin: 0 auto 4px;
+}
+
+.phone-row {
+  height: 22px;
+  border-radius: 8px;
+  background: linear-gradient(90deg, rgba(148, 163, 184, 0.32), rgba(148, 163, 184, 0.12));
+}
+
+.phone-row.short {
+  width: 62%;
+}
+
+.phone-play-btn {
+  width: 40px;
+  height: 40px;
+  margin: 8px auto 0;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.16);
+  position: relative;
+}
+
+.phone-play-btn::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  margin: auto;
+  width: 0;
+  height: 0;
+  border-left: 8px solid #eef2f8;
+  border-top: 6px solid transparent;
+  border-bottom: 6px solid transparent;
+  transform: translateX(1px);
+}
+
+.phone-heart {
+  width: 18px;
+  height: 18px;
+  margin-top: 4px;
+  background: rgba(251, 113, 133, 0.9);
+  clip-path: polygon(50% 90%, 0 38%, 12% 24%, 38% 24%, 50% 36%, 62% 24%, 88% 24%, 100% 38%);
+}
+
+@keyframes phone-float {
+  0%,
+  100% {
+    transform: translateY(0) rotate(-3deg);
+  }
+  50% {
+    transform: translateY(-14px) rotate(3deg);
+  }
+}
+
+.phone-badge {
+  position: absolute;
+  right: -8px;
+  top: 12px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #0b0f1a;
+  background: linear-gradient(120deg, var(--accent-amber), #fde68a);
+  box-shadow: 0 6px 18px rgba(251, 191, 36, 0.4);
+  animation: badge-pulse 3.6s ease-in-out infinite;
+}
+
+@keyframes badge-pulse {
+  0%,
+  100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.08);
+  }
+}
+
+@media (min-width: 1240px) {
+  .phone-deco {
+    display: block;
+  }
 }
 
 .grid-lines {
@@ -265,10 +428,34 @@ onBeforeUnmount(() => {
 
 .hero-desc {
   max-width: 640px;
-  margin: 0 auto 34px;
+  margin: 0 auto 26px;
   color: var(--text-sub);
   font-size: clamp(15px, 2vw, 17px);
   line-height: 1.9;
+}
+
+.platform-chips {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 32px;
+}
+
+.platform-chip {
+  padding: 6px 16px;
+  border-radius: 999px;
+  font-size: 13px;
+  color: var(--text-sub);
+  border: 1px solid var(--border-soft);
+  background: rgba(18, 26, 46, 0.6);
+  transition: color 0.25s ease, border-color 0.25s ease, transform 0.25s ease;
+}
+
+.platform-chip:hover {
+  color: var(--accent-cyan);
+  border-color: rgba(34, 211, 238, 0.5);
+  transform: translateY(-2px);
 }
 
 .hero-actions {
@@ -276,6 +463,58 @@ onBeforeUnmount(() => {
   justify-content: center;
   gap: 16px;
   flex-wrap: wrap;
+}
+
+/* ===== 品牌滚动条 ===== */
+.marquee {
+  overflow: hidden;
+  border-top: 1px solid var(--border-soft);
+  border-bottom: 1px solid var(--border-soft);
+  background: var(--bg-elev);
+  padding: 16px 0;
+  white-space: nowrap;
+}
+
+.marquee-track {
+  display: inline-flex;
+  animation: marquee-scroll 26s linear infinite;
+}
+
+.marquee-group {
+  display: inline-flex;
+  align-items: center;
+  gap: 40px;
+  padding-right: 40px;
+}
+
+.marquee em {
+  font-style: normal;
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: 0.16em;
+  color: var(--text-dim);
+  text-transform: uppercase;
+}
+
+.marquee i {
+  font-style: normal;
+  color: var(--accent-cyan);
+  font-size: 12px;
+}
+
+@keyframes marquee-scroll {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .marquee-track {
+    animation: none;
+  }
 }
 
 /* ===== 数据条 ===== */
@@ -330,13 +569,32 @@ onBeforeUnmount(() => {
   border: 1px solid var(--border-soft);
   text-decoration: none;
   color: inherit;
+  position: relative;
+  overflow: hidden;
   transition: transform 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.service-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, var(--accent-cyan), var(--accent-coral));
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 0.4s ease;
 }
 
 .service-card:hover {
   transform: translateY(-6px);
   border-color: rgba(34, 211, 238, 0.45);
   box-shadow: var(--shadow-card);
+}
+
+.service-card:hover::before {
+  transform: scaleX(1);
 }
 
 .service-top {

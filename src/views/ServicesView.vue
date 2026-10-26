@@ -21,7 +21,7 @@ const promises = [
           <h1 class="page-title">服务内容</h1>
           <p class="page-desc">
             覆盖短视频内容生产、账号运营、直播带货与达人营销的全链路服务，
-            按需组合，灵活匹配品牌不同阶段的需求。
+            从选题到成交，按需组合，灵活匹配品牌不同阶段的需求。
           </p>
         </RevealOnScroll>
       </div>

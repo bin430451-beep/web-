@@ -13,11 +13,19 @@
 
 | 路由 | 页面 |
 | --- | --- |
-| `/#/` | 首页（Hero、数据、服务、案例、流程、CTA） |
+| `/#/` | 首页（Hero 动画、平台标签、品牌滚动条、数据滚动、服务、案例、流程、CTA） |
 | `/#/about` | 关于我们（简介、优势、价值观、发展历程） |
 | `/#/services` | 服务内容（6 项服务、交付承诺） |
-| `/#/cases` | 案例展示（6 个脱敏案例） |
-| `/#/contact` | 联系我们（联系信息 + 商务咨询表单） |
+| `/#/cases` | 案例展示（6 个脱敏案例，支持按服务分类筛选） |
+| `/#/contact` | 联系我们（联系信息 + 带校验的商务咨询表单） |
+
+## 已内置的能力
+
+- 全站回到顶部按钮（滚动 480px 后出现）
+- 路由级 SEO：每页独立 `title` / `description`（`src/router/index.js` 中配置）
+- 响应式布局：移动端汉堡菜单、卡片单列/双列/三列自适应
+- 动效适配 `prefers-reduced-motion`
+- GitHub Actions 自动构建并部署 GitHub Pages
 
 ## 本地开发
 
@@ -49,9 +57,9 @@ npm run build
 
 | 文件 | 内容 |
 | --- | --- |
-| `src/config/site.js` | 品牌名、slogan、简介、联系方式、核心数据 |
+| `src/config/site.js` | 品牌名、slogan、简介、平台、联系方式、核心数据 |
 | `src/config/content.js` | 服务、案例、流程、里程碑、价值观文案 |
 
 替换后全站（导航、页脚、各页面、SEO title）同步生效。
 
-页面入口标题在 `index.html` 中，可一并修改。
+页面入口标题与 Open Graph 标签在 `index.html` 中，可一并修改。
