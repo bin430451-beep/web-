@@ -1,15 +1,19 @@
 {
   "name": "media-studio-site",
   "private": true,
-  "version": "1.0.0",
+  "version": "1.1.0",
   "type": "module",
-  "description": "短视频/自媒体公司官网 - Vue3 + Vite 多页站",
+  "description": "短视频/自媒体公司官网 - Vue3 + Vite 前端 + Express/SQLite 后端",
   "scripts": {
     "dev": "vite",
+    "dev:server": "node --watch server/index.js",
     "build": "vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "start": "node server/index.js"
   },
   "dependencies": {
+    "better-sqlite3": "^11.7.0",
+    "express": "^4.21.2",
     "vue": "^3.5.13",
     "vue-router": "^4.5.0"
   },

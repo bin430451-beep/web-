@@ -1,13 +1,11 @@
 # 星屿传媒官网（占位品牌）
 
-短视频 / 自媒体公司官网，基于 **Vue 3 + Vite + vue-router** 的多页展示站。
+短视频 / 自媒体公司官网：**Vue 3 + Vite** 前端 + **Express + SQLite** 后端（前后端一体）。
 
 ## 技术栈
 
-- Vue 3.5（Composition API / `<script setup>`）
-- Vite 5（相对路径构建，任意静态托管可部署）
-- vue-router 4（hash 模式，无需服务端配置）
-- 原生 CSS（暗色主题、响应式、滚动渐入动效，零 UI 框架依赖）
+- 前端：Vue 3.5（Composition API）、Vite 5、vue-router 4、原生 CSS
+- 后端：Express 4、better-sqlite3（SQLite，单文件零配置）
 
 ## 页面
 
@@ -17,39 +15,68 @@
 | `/#/about` | 关于我们（简介、优势、价值观、发展历程） |
 | `/#/services` | 服务内容（6 项服务、交付承诺） |
 | `/#/cases` | 案例展示（6 个脱敏案例，支持按服务分类筛选） |
-| `/#/contact` | 联系我们（联系信息 + 带校验的商务咨询表单） |
+| `/#/contact` | 联系我们（联系信息 + 商务咨询表单，提交写入数据库） |
 
-## 已内置的能力
+## 后端接口
 
-- 全站回到顶部按钮（滚动 480px 后出现）
-- 路由级 SEO：每页独立 `title` / `description`（`src/router/index.js` 中配置）
-- 响应式布局：移动端汉堡菜单、卡片单列/双列/三列自适应
-- 动效适配 `prefers-reduced-motion`
-- GitHub Actions 自动构建并部署 GitHub Pages
+| 方法 | 路径 | 说明 |
+| --- | --- | --- |
+| GET | `/api/health` | 健康检查 |
+| POST | `/api/contact` | 提交商务咨询（姓名/手机号/公司/服务/需求），入库 |
+| GET | `/api/contact?limit=50` | 查询咨询记录（倒序，最多 200 条） |
+
+服务端二次校验 + 参数化查询（防注入）+ 每 IP 每小时限 10 条（防刷）。
 
 ## 本地开发
 
 ```bash
-npm install      # 安装依赖
-npm run dev      # 启动开发服务器（默认 http://localhost:5173）
-npm run build    # 生产构建，产物输出到 dist/
-npm run preview  # 本地预览构建产物
+npm install          # 安装前后端依赖
+npm run dev:server   # 启动后端 API（http://localhost:3000）
+npm run dev          # 另开终端启动前端（http://localhost:5173，/api 自动代理）
 ```
+
+## 生产运行（前后端一体）
+
+```bash
+npm run build        # 构建前端产物到 dist/
+npm start            # 启动服务：同时托管 dist 静态文件 + API，默认 http://localhost:3000
+```
+
+环境变量：
+
+| 变量 | 默认值 | 说明 |
+| --- | --- | --- |
+| `PORT` | `3000` | 服务端口 |
+| `DB_PATH` | `data/messages.db` | 数据库文件路径 |
+
+数据库文件由服务首次启动时自动创建，不提交到 Git。
 
 ## 部署
 
-### GitHub Pages（推荐，已内置 Actions 工作流）
-
-1. 推送代码到 GitHub 仓库 `main` 分支
-2. 仓库 Settings → Pages → Source 选择 **GitHub Actions**
-3. 每次 push 到 `main` 自动构建并部署，访问 `https://<用户名>.github.io/<仓库名>/`
-
-### 其他静态托管（Nginx / 阿里云 OSS / 腾讯云 COS 等）
+### 方式一：云服务器 / VPS
 
 ```bash
+npm install
 npm run build
-# 将 dist/ 目录整体上传即可
+npm start        # 建议使用 pm2 / systemd 守护
 ```
+
+### 方式二：Docker（自行构建镜像）
+
+```bash
+# 构建镜像（需自备 Dockerfile）
+docker build -t media-site .
+docker run -p 3000:3000 -v ./data:/app/data media-site
+```
+
+### 方式三：云平台（Railway / Render / 腾讯云等）
+
+选择 Node.js 运行时，启动命令 `npm start`，构建命令 `npm install && npm run build`。
+
+## GitHub Actions
+
+push 到 `main` 自动执行前端构建校验（`npm run build`），通过即代表代码可交付。
+（Node 后端无法运行在 GitHub Pages 上，部署请使用上述方式。）
 
 ## 替换占位内容（重要）
 
@@ -61,5 +88,4 @@ npm run build
 | `src/config/content.js` | 服务、案例、流程、里程碑、价值观文案 |
 
 替换后全站（导航、页脚、各页面、SEO title）同步生效。
-
 页面入口标题与 Open Graph 标签在 `index.html` 中，可一并修改。

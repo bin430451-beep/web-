@@ -14,6 +14,7 @@ const form = reactive({
 const errors = reactive({})
 const submitting = ref(false)
 const submitted = ref(false)
+const errorMsg = ref('')
 
 function validate() {
   errors.name = form.name.trim() ? '' : '请填写您的称呼'
@@ -22,14 +23,26 @@ function validate() {
   return !errors.name && !errors.phone && !errors.message
 }
 
-function onSubmit() {
+async function onSubmit() {
+  errorMsg.value = ''
   if (!validate()) return
   submitting.value = true
-  // 纯前端演示：模拟提交，正式接入时在此调用后端接口
-  setTimeout(() => {
-    submitting.value = false
+  try {
+    const res = await fetch('/api/contact', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ ...form })
+    })
+    const data = await res.json().catch(() => ({}))
+    if (!res.ok) {
+      throw new Error(data.error || '提交失败，请稍后再试')
+    }
     submitted.value = true
-  }, 800)
+  } catch (e) {
+    errorMsg.value = e.message || '网络异常，请稍后再试'
+  } finally {
+    submitting.value = false
+  }
 }
 
 function resetForm() {
@@ -134,6 +147,8 @@ const contactItems = [
                   ></textarea>
                   <span v-if="errors.message" class="field-error">{{ errors.message }}</span>
                 </div>
+
+                <div v-if="errorMsg" class="form-error">{{ errorMsg }}</div>
 
                 <button type="submit" class="btn btn-primary form-submit" :disabled="submitting">
                   {{ submitting ? '提交中…' : '提交需求' }}
@@ -311,6 +326,17 @@ const contactItems = [
 .form-submit:disabled {
   opacity: 0.6;
   cursor: not-allowed;
+}
+
+/* 提交错误提示 */
+.form-error {
+  margin: 0 0 14px;
+  padding: 10px 14px;
+  border-radius: 10px;
+  font-size: 14px;
+  color: var(--accent-coral);
+  background: rgba(251, 113, 133, 0.1);
+  border: 1px solid rgba(251, 113, 133, 0.3);
 }
 
 /* 提交成功 */
