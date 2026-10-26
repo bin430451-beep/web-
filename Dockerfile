@@ -1,4 +1,4 @@
-FROM node:20-bookworm-slim AS build
+FROM node:24-bookworm-slim AS build
 WORKDIR /app
 
 # better-sqlite3 can fall back to a native build when no prebuilt binary is available.
@@ -8,7 +8,7 @@ RUN npm install --no-audit --no-fund
 COPY . .
 RUN npm run build && npm prune --omit=dev --no-audit --no-fund
 
-FROM node:20-bookworm-slim AS runtime
+FROM node:24-bookworm-slim AS runtime
 ENV NODE_ENV=production
 WORKDIR /app
 RUN apt-get update && apt-get install -y --no-install-recommends libstdc++6 && rm -rf /var/lib/apt/lists/*

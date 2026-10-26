@@ -3,6 +3,9 @@
   "private": true,
   "version": "1.1.0",
   "type": "module",
+  "engines": {
+    "node": ">=24 <25"
+  },
   "description": "短视频/自媒体公司官网 - Vue3 + Vite 前端 + Express/SQLite 后端",
   "scripts": {
     "dev": "vite",
@@ -12,7 +15,7 @@
     "start": "node server/index.js"
   },
   "dependencies": {
-    "better-sqlite3": "^11.7.0",
+    "better-sqlite3": "^12.10.0",
     "express": "^4.21.2",
     "vue": "^3.5.13",
     "vue-router": "^4.5.0"
