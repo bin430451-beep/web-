@@ -1,5 +1,5 @@
 <script setup>
-import { reactive, ref } from 'vue'
+import { reactive, ref, onBeforeUnmount } from 'vue'
 import { site } from '../config/site'
 import RevealOnScroll from '../components/RevealOnScroll.vue'
 
@@ -15,6 +15,8 @@ const errors = reactive({})
 const submitting = ref(false)
 const submitted = ref(false)
 const errorMsg = ref('')
+const copied = ref(false)
+let copiedTimer
 
 function validate() {
   errors.name = form.name.trim() ? '' : '请填写您的称呼'
@@ -56,6 +58,19 @@ const contactItems = [
   { label: '微信咨询', value: site.contact.wechat, hint: '添加请备注「官网咨询」' },
   { label: '公司地址', value: site.contact.address, hint: '欢迎到访洽谈' }
 ]
+
+async function copyWechat() {
+  try {
+    await navigator.clipboard.writeText(site.contact.wechat)
+    copied.value = true
+    window.clearTimeout(copiedTimer)
+    copiedTimer = window.setTimeout(() => { copied.value = false }, 2200)
+  } catch {
+    errorMsg.value = '当前浏览器不支持复制，请手动复制微信号'
+  }
+}
+
+onBeforeUnmount(() => window.clearTimeout(copiedTimer))
 </script>
 
 <template>
@@ -84,7 +99,31 @@ const contactItems = [
             <div class="info-list">
               <div v-for="item in contactItems" :key="item.label" class="info-item">
                 <span class="info-label">{{ item.label }}</span>
-                <span class="info-value">{{ item.value }}</span>
+                <a
+                  v-if="item.label === '商务邮箱'"
+                  class="info-value info-action"
+                  :href="`mailto:${item.value}`"
+                >
+                  {{ item.value }}<span aria-hidden="true">↗</span>
+                </a>
+                <a
+                  v-else-if="item.label === '联系电话'"
+                  class="info-value info-action"
+                  :href="`tel:${item.value.replaceAll('-', '')}`"
+                >
+                  {{ item.value }}<span aria-hidden="true">↗</span>
+                </a>
+                <button
+                  v-else-if="item.label === '微信咨询'"
+                  type="button"
+                  class="info-value info-action info-copy"
+                  :aria-label="`复制微信号 ${item.value}`"
+                  @click="copyWechat"
+                >
+                  {{ copied ? '已复制微信号 ✓' : item.value }}
+                  <span v-if="!copied" aria-hidden="true">⧉</span>
+                </button>
+                <span v-else class="info-value">{{ item.value }}</span>
                 <span class="info-hint">{{ item.hint }}</span>
               </div>
             </div>
@@ -94,7 +133,13 @@ const contactItems = [
         <!-- 联系表单 -->
         <div class="contact-form-wrap">
           <RevealOnScroll :delay="80">
-            <form class="contact-form" novalidate @submit.prevent="onSubmit">
+            <form
+              class="contact-form"
+              novalidate
+              :aria-busy="submitting"
+              @submit.prevent="onSubmit"
+              @input="errorMsg = ''"
+            >
               <h2 class="form-title">商务咨询</h2>
 
               <div v-if="submitted" class="form-success">
@@ -108,13 +153,30 @@ const contactItems = [
                 <div class="form-row">
                   <div class="form-field">
                     <label for="name">称呼 *</label>
-                    <input id="name" v-model="form.name" type="text" placeholder="怎么称呼您" />
-                    <span v-if="errors.name" class="field-error">{{ errors.name }}</span>
+                    <input
+                      id="name"
+                      v-model="form.name"
+                      type="text"
+                      autocomplete="name"
+                      placeholder="怎么称呼您"
+                      :aria-invalid="Boolean(errors.name)"
+                      aria-describedby="name-error"
+                    />
+                    <span v-if="errors.name" id="name-error" class="field-error">{{ errors.name }}</span>
                   </div>
                   <div class="form-field">
                     <label for="phone">手机号 *</label>
-                    <input id="phone" v-model="form.phone" type="tel" placeholder="11 位手机号" />
-                    <span v-if="errors.phone" class="field-error">{{ errors.phone }}</span>
+                    <input
+                      id="phone"
+                      v-model="form.phone"
+                      type="tel"
+                      inputmode="numeric"
+                      autocomplete="tel"
+                      placeholder="11 位手机号"
+                      :aria-invalid="Boolean(errors.phone)"
+                      aria-describedby="phone-error"
+                    />
+                    <span v-if="errors.phone" id="phone-error" class="field-error">{{ errors.phone }}</span>
                   </div>
                 </div>
 
@@ -144,11 +206,13 @@ const contactItems = [
                     v-model="form.message"
                     rows="4"
                     placeholder="简单描述您的品牌与目标，例如：我们是美妆品牌，希望 3 个月内账号涨粉 20 万"
+                    :aria-invalid="Boolean(errors.message)"
+                    aria-describedby="message-error"
                   ></textarea>
-                  <span v-if="errors.message" class="field-error">{{ errors.message }}</span>
+                  <span v-if="errors.message" id="message-error" class="field-error">{{ errors.message }}</span>
                 </div>
 
-                <div v-if="errorMsg" class="form-error">{{ errorMsg }}</div>
+                <div v-if="errorMsg" class="form-error" role="alert">{{ errorMsg }}</div>
 
                 <button type="submit" class="btn btn-primary form-submit" :disabled="submitting">
                   {{ submitting ? '提交中…' : '提交需求' }}
@@ -241,6 +305,29 @@ const contactItems = [
   font-weight: 600;
   color: var(--text-main);
   margin-bottom: 4px;
+}
+
+.info-action {
+  width: fit-content;
+  max-width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--text-main);
+  text-decoration: none;
+  transition: color 0.2s ease;
+}
+
+.info-action:hover {
+  color: var(--accent-cyan);
+}
+
+.info-copy {
+  padding: 0;
+  border: 0;
+  background: none;
+  font: inherit;
+  cursor: pointer;
 }
 
 .info-hint {

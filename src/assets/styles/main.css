@@ -22,6 +22,7 @@
   --radius-lg: 18px;
   --radius-md: 12px;
   --shadow-card: 0 12px 32px rgba(0, 0, 0, 0.35);
+  --shadow-glow: 0 18px 60px rgba(34, 211, 238, 0.09);
 }
 
 * {
@@ -32,6 +33,7 @@
 
 html {
   scroll-behavior: smooth;
+  scroll-padding-top: 84px;
 }
 
 body {
@@ -44,6 +46,8 @@ body {
     Roboto,
     sans-serif;
   background: var(--bg-base);
+  background-image: radial-gradient(ellipse at 12% 4%, rgba(34, 211, 238, 0.045), transparent 32%),
+    radial-gradient(ellipse at 88% 22%, rgba(251, 113, 133, 0.035), transparent 30%);
   color: var(--text-main);
   line-height: 1.6;
   -webkit-font-smoothing: antialiased;
@@ -60,6 +64,28 @@ a {
 
 button {
   font-family: inherit;
+}
+
+button,
+a,
+input,
+select,
+textarea {
+  -webkit-tap-highlight-color: transparent;
+}
+
+button:focus-visible,
+a:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible {
+  outline: 2px solid var(--accent-cyan);
+  outline-offset: 4px;
+}
+
+::selection {
+  color: var(--bg-base);
+  background: var(--accent-cyan);
 }
 
 .container {
@@ -95,6 +121,10 @@ button {
   box-shadow: 0 10px 26px rgba(34, 211, 238, 0.35);
 }
 
+.btn:active {
+  transform: translateY(0) scale(0.98);
+}
+
 .btn-ghost {
   color: var(--text-main);
   border: 1px solid var(--border-soft);
@@ -121,7 +151,9 @@ button {
 }
 
 .section-alt {
-  background: var(--bg-elev);
+  background: linear-gradient(180deg, rgba(16, 22, 39, 0.82), rgba(16, 22, 39, 0.58));
+  border-top: 1px solid rgba(255, 255, 255, 0.025);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.025);
 }
 
 /* ===== 滚动条 ===== */
@@ -145,6 +177,17 @@ button {
 /* ===== 页脚前的页面顶部留白（固定导航遮挡） ===== */
 .page-top-space {
   padding-top: 72px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
 }
 
 @media (max-width: 860px) {

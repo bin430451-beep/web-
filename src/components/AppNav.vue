@@ -1,9 +1,11 @@
 <script setup>
-import { ref, onMounted, onBeforeUnmount } from 'vue'
+import { ref, onMounted, onBeforeUnmount, watch } from 'vue'
+import { useRoute } from 'vue-router'
 import { site } from '../config/site'
 
 const menuOpen = ref(false)
 const scrolled = ref(false)
+const route = useRoute()
 
 const links = [
   { to: '/', label: '首页' },
@@ -17,11 +19,22 @@ function onScroll() {
   scrolled.value = window.scrollY > 24
 }
 
+function onKeydown(event) {
+  if (event.key === 'Escape') menuOpen.value = false
+}
+
+watch(() => route.fullPath, () => {
+  menuOpen.value = false
+})
+
 onMounted(() => {
+  onScroll()
   window.addEventListener('scroll', onScroll, { passive: true })
+  window.addEventListener('keydown', onKeydown)
 })
 onBeforeUnmount(() => {
   window.removeEventListener('scroll', onScroll)
+  window.removeEventListener('keydown', onKeydown)
 })
 </script>
 
@@ -33,7 +46,12 @@ onBeforeUnmount(() => {
         <span class="brand-name">{{ site.brand.name }}</span>
       </router-link>
 
-      <nav class="nav-links" :class="{ 'is-open': menuOpen }" aria-label="主导航">
+      <nav
+        id="primary-navigation"
+        class="nav-links"
+        :class="{ 'is-open': menuOpen }"
+        aria-label="主导航"
+      >
         <router-link
           v-for="link in links"
           :key="link.to"
@@ -52,6 +70,7 @@ onBeforeUnmount(() => {
         class="nav-toggle"
         :class="{ 'is-active': menuOpen }"
         :aria-expanded="menuOpen"
+        aria-controls="primary-navigation"
         aria-label="切换菜单"
         @click="menuOpen = !menuOpen"
       >
@@ -75,6 +94,10 @@ onBeforeUnmount(() => {
   background: rgba(11, 15, 26, 0.86);
   backdrop-filter: blur(12px);
   box-shadow: 0 6px 24px rgba(0, 0, 0, 0.28);
+}
+
+.app-nav:not(.is-scrolled) {
+  background: linear-gradient(180deg, rgba(11, 15, 26, 0.72), transparent);
 }
 
 .nav-inner {
@@ -227,6 +250,7 @@ onBeforeUnmount(() => {
     pointer-events: none;
     transition: transform 0.3s ease, opacity 0.3s ease;
     box-shadow: 0 16px 32px rgba(0, 0, 0, 0.35);
+    border-bottom: 1px solid var(--border-soft);
   }
 
   .nav-links.is-open {

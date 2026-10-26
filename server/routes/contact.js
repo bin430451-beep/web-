@@ -56,7 +56,8 @@ router.post('/', (req, res) => {
  * 查询咨询记录（后台查看用，默认 50 条）
  */
 router.get('/', (req, res) => {
-  const limit = Math.min(Number(req.query.limit) || 50, 200)
+  const requestedLimit = Number(req.query.limit) || 50
+  const limit = Math.max(1, Math.min(requestedLimit, 200))
   res.json({ items: listMessages(limit) })
 })
 

@@ -61,17 +61,22 @@ npm run build
 npm start        # 建议使用 pm2 / systemd 守护
 ```
 
-### 方式二：Docker（自行构建镜像）
+### 方式二：Docker
 
 ```bash
-# 构建镜像（需自备 Dockerfile）
+# 在项目根目录构建镜像并创建持久化数据卷
 docker build -t media-site .
-docker run -p 3000:3000 -v ./data:/app/data media-site
+docker volume create media-site-data
+
+# 启动（命令可直接用于 PowerShell、CMD 或 Bash）
+docker run -d --name media-site --restart unless-stopped -p 3000:3000 -e DB_PATH=/app/data/messages.db -v media-site-data:/app/data media-site
 ```
+
+部署后访问 `http://服务器地址:3000`，健康检查地址为 `/api/health`。SQLite 数据保存在 `media-site-data` 卷中，容器更新或重建时不会丢失。更新镜像时重新执行构建，然后删除旧容器并用相同数据卷启动新容器。
 
 ### 方式三：云平台（Railway / Render / 腾讯云等）
 
-选择 Node.js 运行时，启动命令 `npm start`，构建命令 `npm install && npm run build`。
+选择 Node.js 20 运行时，启动命令 `npm start`，构建命令 `npm install && npm run build`。请为实例配置持久化磁盘，并将 `DB_PATH` 指向该磁盘上的数据库文件；临时文件系统重启或重新部署时可能被清空。
 
 ## GitHub Actions
 
