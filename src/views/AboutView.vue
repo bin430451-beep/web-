@@ -3,6 +3,7 @@ import { site } from '../config/site'
 import { timeline, values } from '../config/content'
 import SectionTitle from '../components/SectionTitle.vue'
 import RevealOnScroll from '../components/RevealOnScroll.vue'
+import PageHero from '../components/PageHero.vue'
 
 const strengths = [
   { title: '内容方法论', desc: '多年实战沉淀的内容创作与数据复盘体系，让产出可复制、效果可预期。' },
@@ -15,15 +16,7 @@ const strengths = [
 <template>
   <div class="about-page page-top-space">
     <!-- 页面头部 -->
-    <section class="page-hero">
-      <div class="container">
-        <RevealOnScroll>
-          <p class="page-kicker">ABOUT US</p>
-          <h1 class="page-title">关于{{ site.brand.name }}</h1>
-          <p class="page-desc">{{ site.brand.intro }}</p>
-        </RevealOnScroll>
-      </div>
-    </section>
+    <PageHero tag="ABOUT US" :title="`关于${site.brand.name}`" :description="site.brand.intro" tone="cyan" />
 
     <!-- 公司简介 -->
     <section class="section">
@@ -124,37 +117,6 @@ const strengths = [
 </template>
 
 <style scoped>
-/* 页面头部（各页共用样式，分别定义保持一致） */
-.page-hero {
-  position: relative;
-  padding: 110px 0 70px;
-  overflow: hidden;
-  text-align: center;
-  background: radial-gradient(ellipse at 50% 0%, rgba(34, 211, 238, 0.14), transparent 60%);
-  border-bottom: 1px solid var(--border-soft);
-}
-
-.page-kicker {
-  font-size: 13px;
-  letter-spacing: 0.16em;
-  color: var(--accent-cyan);
-  margin-bottom: 16px;
-}
-
-.page-title {
-  font-size: clamp(30px, 5vw, 46px);
-  font-weight: 800;
-  margin-bottom: 16px;
-}
-
-.page-desc {
-  max-width: 640px;
-  margin: 0 auto;
-  color: var(--text-sub);
-  font-size: 16px;
-  line-height: 1.9;
-}
-
 /* 简介 */
 .about-intro {
   display: grid;

@@ -2,6 +2,7 @@
 import { services } from '../config/content'
 import SectionTitle from '../components/SectionTitle.vue'
 import RevealOnScroll from '../components/RevealOnScroll.vue'
+import PageHero from '../components/PageHero.vue'
 
 const promises = [
   { title: '透明报价', desc: '服务范围与价格白纸黑字，无隐形消费，按节点付款。' },
@@ -14,18 +15,12 @@ const promises = [
 <template>
   <div class="services-page page-top-space">
     <!-- 页面头部 -->
-    <section class="page-hero">
-      <div class="container">
-        <RevealOnScroll>
-          <p class="page-kicker">OUR SERVICES</p>
-          <h1 class="page-title">服务内容</h1>
-          <p class="page-desc">
-            覆盖短视频内容生产、账号运营、直播带货与达人营销的全链路服务，
-            从选题到成交，按需组合，灵活匹配品牌不同阶段的需求。
-          </p>
-        </RevealOnScroll>
-      </div>
-    </section>
+    <PageHero
+      tag="OUR SERVICES"
+      title="服务内容"
+      description="覆盖短视频内容生产、账号运营、直播带货与达人营销的全链路服务，从选题到成交，按需组合，灵活匹配品牌不同阶段的需求。"
+      tone="coral"
+    />
 
     <!-- 服务列表 -->
     <section class="section">
@@ -84,37 +79,6 @@ const promises = [
 </template>
 
 <style scoped>
-/* 页面头部 */
-.page-hero {
-  position: relative;
-  padding: 110px 0 70px;
-  overflow: hidden;
-  text-align: center;
-  background: radial-gradient(ellipse at 50% 0%, rgba(251, 113, 133, 0.13), transparent 60%);
-  border-bottom: 1px solid var(--border-soft);
-}
-
-.page-kicker {
-  font-size: 13px;
-  letter-spacing: 0.16em;
-  color: var(--accent-cyan);
-  margin-bottom: 16px;
-}
-
-.page-title {
-  font-size: clamp(30px, 5vw, 46px);
-  font-weight: 800;
-  margin-bottom: 16px;
-}
-
-.page-desc {
-  max-width: 640px;
-  margin: 0 auto;
-  color: var(--text-sub);
-  font-size: 16px;
-  line-height: 1.9;
-}
-
 /* 服务条目 */
 .service-list {
   display: flex;

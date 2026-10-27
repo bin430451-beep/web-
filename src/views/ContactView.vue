@@ -1,64 +1,14 @@
 <script setup>
-import { reactive, ref, onBeforeUnmount } from 'vue'
+import { ref, onBeforeUnmount } from 'vue'
 import { site } from '../config/site'
+import PageHero from '../components/PageHero.vue'
 import RevealOnScroll from '../components/RevealOnScroll.vue'
+import { useContactForm } from '../composables/useContactForm'
 
 const demoMode = import.meta.env.VITE_DEMO_MODE === 'true'
-
-const form = reactive({
-  name: '',
-  phone: '',
-  company: '',
-  service: '',
-  message: ''
-})
-
-const errors = reactive({})
-const submitting = ref(false)
-const submitted = ref(false)
-const errorMsg = ref('')
+const { form, errors, submitting, submitted, errorMsg, submit, clearError, reset } = useContactForm({ demoMode })
 const copied = ref(false)
 let copiedTimer
-
-function validate() {
-  errors.name = form.name.trim() ? '' : '请填写您的称呼'
-  errors.phone = /^1\d{10}$/.test(form.phone.trim()) ? '' : '请填写正确的 11 位手机号'
-  errors.message = form.message.trim() ? '' : '请简单描述您的需求'
-  return !errors.name && !errors.phone && !errors.message
-}
-
-async function onSubmit() {
-  errorMsg.value = ''
-  if (!validate()) return
-  submitting.value = true
-  try {
-    if (demoMode) {
-      await new Promise((resolve) => window.setTimeout(resolve, 400))
-      submitted.value = true
-      return
-    }
-
-    const res = await fetch('/api/contact', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ ...form })
-    })
-    const data = await res.json().catch(() => ({}))
-    if (!res.ok) {
-      throw new Error(data.error || '提交失败，请稍后再试')
-    }
-    submitted.value = true
-  } catch (e) {
-    errorMsg.value = e.message || '网络异常，请稍后再试'
-  } finally {
-    submitting.value = false
-  }
-}
-
-function resetForm() {
-  Object.keys(form).forEach((k) => (form[k] = ''))
-  submitted.value = false
-}
 
 const contactItems = [
   { label: '商务邮箱', value: site.contact.email, hint: '方案与报价请发邮件' },
@@ -84,18 +34,12 @@ onBeforeUnmount(() => window.clearTimeout(copiedTimer))
 <template>
   <div class="contact-page page-top-space">
     <!-- 页面头部 -->
-    <section class="page-hero">
-      <div class="container">
-        <RevealOnScroll>
-          <p class="page-kicker">CONTACT US</p>
-          <h1 class="page-title">联系我们</h1>
-          <p class="page-desc">
-            无论您是品牌方、创业者还是内容创作者，都欢迎与我们聊聊。
-            留下您的需求，我们会在 24 小时内回复。
-          </p>
-        </RevealOnScroll>
-      </div>
-    </section>
+    <PageHero
+      tag="CONTACT US"
+      title="联系我们"
+      description="无论您是品牌方、创业者还是内容创作者，都欢迎与我们聊聊。留下您的需求，我们会在 24 小时内回复。"
+      tone="cyan"
+    />
 
     <section class="section">
       <div class="container contact-layout">
@@ -145,8 +89,8 @@ onBeforeUnmount(() => window.clearTimeout(copiedTimer))
               class="contact-form"
               novalidate
               :aria-busy="submitting"
-              @submit.prevent="onSubmit"
-              @input="errorMsg = ''"
+              @submit.prevent="submit"
+              @input="clearError"
             >
               <h2 class="form-title">商务咨询</h2>
 
@@ -155,7 +99,7 @@ onBeforeUnmount(() => window.clearTimeout(copiedTimer))
                 <h3>提交成功</h3>
                 <p v-if="demoMode">演示提交完成：没有发送或保存您填写的信息。正式咨询请使用正式站点。</p>
                 <p v-else>感谢您的咨询，我们会在 24 小时内与您联系。</p>
-                <button type="button" class="btn btn-ghost" @click="resetForm">再填一次</button>
+                <button type="button" class="btn btn-ghost" @click="reset">再填一次</button>
               </div>
 
               <template v-else>
@@ -242,36 +186,6 @@ onBeforeUnmount(() => window.clearTimeout(copiedTimer))
 </template>
 
 <style scoped>
-.page-hero {
-  position: relative;
-  padding: 110px 0 70px;
-  overflow: hidden;
-  text-align: center;
-  background: radial-gradient(ellipse at 50% 0%, rgba(34, 211, 238, 0.14), transparent 60%);
-  border-bottom: 1px solid var(--border-soft);
-}
-
-.page-kicker {
-  font-size: 13px;
-  letter-spacing: 0.16em;
-  color: var(--accent-cyan);
-  margin-bottom: 16px;
-}
-
-.page-title {
-  font-size: clamp(30px, 5vw, 46px);
-  font-weight: 800;
-  margin-bottom: 16px;
-}
-
-.page-desc {
-  max-width: 640px;
-  margin: 0 auto;
-  color: var(--text-sub);
-  font-size: 16px;
-  line-height: 1.9;
-}
-
 /* 布局 */
 .contact-layout {
   display: grid;

@@ -2,6 +2,7 @@
 import { ref, computed } from 'vue'
 import { cases } from '../config/content'
 import RevealOnScroll from '../components/RevealOnScroll.vue'
+import PageHero from '../components/PageHero.vue'
 
 const activeCategory = ref('全部')
 
@@ -17,18 +18,12 @@ const filteredCases = computed(() =>
 <template>
   <div class="cases-page page-top-space">
     <!-- 页面头部 -->
-    <section class="page-hero">
-      <div class="container">
-        <RevealOnScroll>
-          <p class="page-kicker">SELECTED CASES</p>
-          <h1 class="page-title">案例展示</h1>
-          <p class="page-desc">
-            每一组数据背后，都是一次内容与策略的双重验证。
-            以下案例均来自我们服务过的真实品牌项目。
-          </p>
-        </RevealOnScroll>
-      </div>
-    </section>
+    <PageHero
+      tag="SELECTED CASES"
+      title="案例展示"
+      description="每一组数据背后，都是一次内容与策略的双重验证。以下案例均来自我们服务过的真实品牌项目。"
+      tone="amber"
+    />
 
     <!-- 案例网格 -->
     <section class="section">
@@ -96,36 +91,6 @@ const filteredCases = computed(() =>
 </template>
 
 <style scoped>
-.page-hero {
-  position: relative;
-  padding: 110px 0 70px;
-  overflow: hidden;
-  text-align: center;
-  background: radial-gradient(ellipse at 50% 0%, rgba(251, 191, 36, 0.12), transparent 60%);
-  border-bottom: 1px solid var(--border-soft);
-}
-
-.page-kicker {
-  font-size: 13px;
-  letter-spacing: 0.16em;
-  color: var(--accent-cyan);
-  margin-bottom: 16px;
-}
-
-.page-title {
-  font-size: clamp(30px, 5vw, 46px);
-  font-weight: 800;
-  margin-bottom: 16px;
-}
-
-.page-desc {
-  max-width: 640px;
-  margin: 0 auto;
-  color: var(--text-sub);
-  font-size: 16px;
-  line-height: 1.9;
-}
-
 /* 筛选栏 */
 .filter-bar {
   display: flex;
