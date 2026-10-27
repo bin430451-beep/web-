@@ -82,105 +82,13 @@ npm start            # 启动服务：同时托管 dist 静态文件 + API，默
 
 ## 部署
 
-### GitHub Pages 体验版（用于预览和试用）
+部署分为 GitHub Pages 静态体验版和正式 Node.js 网站。Pages 只能预览前端，不能运行 Express/SQLite；需要真实接收咨询时，请使用带持久化磁盘的 Node.js 服务或 Docker。
 
-仓库已经配置 GitHub Actions 自动发布静态体验版。它可以在 GitHub Pages 上预览页面、导航、案例筛选和表单交互；由于 Pages 不运行 Express/SQLite，表单只会模拟提交，不会发送或保存填写内容。需要真正收集咨询时，请使用下面的 Node.js 正式部署方式。
-
-首次启用时，在 GitHub 仓库中操作一次：
-
-1. 打开仓库 `Settings`（设置）。
-2. 左侧选择 `Pages`。
-3. 在 `Build and deployment`（构建与部署）区域，将 `Source`（来源）改为 `GitHub Actions`。
-4. 回到 `Actions` 页面，打开 `Deploy GitHub Pages Demo` 工作流；如果它没有自动运行，点 `Run workflow`。
-5. 等待 `build` 和 `deploy` 两项都显示绿色成功标记，再回到 `Settings → Pages` 打开网站地址。通常地址为 `https://bin430451-beep.github.io/web-/`。
-
-之后每次推送到 `main`，体验版都会自动更新。GitHub Actions 中的 `Build Check` 只检查项目能否构建；`Deploy GitHub Pages Demo` 才负责发布体验版。
-
-### 推荐：使用带持久化磁盘的云平台
-
-这是发布正式网站的推荐方式。选择支持 **Node.js 后端、持久化磁盘和 HTTPS** 的 Web Service（例如 Railway、Render 或同类平台）。请勿把 GitHub Pages 或普通“静态网站 / Static Site”当作正式站：它们不能运行本项目的 Express 服务和 SQLite 数据库，咨询表单也就无法真正入库。
-
-#### 第一步：把 GitHub 仓库导入云平台
-
-1. 登录云平台，选择新建 **Web Service / Node.js 应用**。
-2. 连接 GitHub 账号并选择 `bin430451-beep/web-` 仓库。
-3. 如果平台询问代码分支，选择 `main`。
-
-#### 第二步：填写构建和启动命令
-
-在平台的部署设置中填写以下值（不同平台的字段名称可能略有不同）：
-
-| 设置项 | 填写内容 |
-| --- | --- |
-| 运行环境 | [Node.js 24 LTS](https://nodejs.org/en/about/previous-releases) |
-| 构建命令 | `npm install --no-audit --no-fund && npm run build` |
-| 启动命令 | `npm start` |
-| 实例数量 | 1 |
-
-#### 第三步：添加持久化磁盘
-
-在平台的 **Disks / Storage / 持久化磁盘** 页面添加磁盘，并记下平台给出的挂载目录。例如挂载目录是 `/var/data`，就把下面的 `DB_PATH` 设置成 `/var/data/messages.db`。请使用你自己的挂载目录；不要照抄示例路径。
-
-SQLite 数据库必须放在持久化磁盘里。否则平台重新部署或重启后，咨询记录可能丢失。请使用单个应用实例；多机部署需要更换为共享数据库，并配置共享限流存储。
-
-#### 第四步：填写环境变量
-
-在平台的 **Environment Variables / 环境变量 / Secrets / 密钥** 页面添加：
-
-| 名称 | 示例值 | 是否必需 |
-| --- | --- | --- |
-| `DB_PATH` | `/var/data/messages.db` | 必需，改为你的持久化磁盘路径 |
-| `CONTACT_ADMIN_TOKEN` | 64 个十六进制字符 | 可选；需要查询咨询记录时才设置 |
-| `TRUST_PROXY` | `1` | 按平台说明填写可信代理层数；不确定时先询问平台 |
-
-平台通常会自动设置 `PORT`，一般不需要手动添加。管理令牌可以在已安装 Node.js 的电脑上生成：
-
-```bash
-node -p "require('node:crypto').randomBytes(32).toString('hex')"
-```
-
-把生成的字符串作为 `CONTACT_ADMIN_TOKEN` 的值，保存到平台密钥设置中。不要把真实令牌写进代码或提交到 GitHub。没有配置该令牌时，网站表单照常提交，但 `GET /api/contact` 查询接口会关闭。
-
-`TRUST_PROXY` 只填写平台文档明确提供的代理层数，不要填 `true`。填错可能让访客共用同一个限流计数，或绕过按 IP 限流。
-
-#### 第五步：部署并确认启动
-
-1. 点击 **Deploy / 部署**，等待平台完成构建和启动。
-2. 打开平台分配的 HTTPS 网站地址，确认首页能显示。
-3. 在网址后加 `/api/health`，例如 `https://你的域名/api/health`。看到 `{"ok":true,...}` 表示服务端已启动。
-4. 检查平台日志没有启动错误，并确认磁盘状态为已挂载。
-
-不要在没有 HTTPS 的公开网址上填写真实咨询信息。域名和 HTTPS 证书通常可在云平台的 **Domains / Custom Domains** 页面配置。
-
-### 备用：使用 Docker 部署到自己的服务器
-
-适合已经有安装 Docker 的 Linux 服务器和 HTTPS 反向代理的情况。下面命令在服务器终端中逐条执行；`cd web-` 后应位于含有 `Dockerfile` 的项目目录。
-
-```bash
-git clone https://github.com/bin430451-beep/web-.git
-cd web-
-docker build -t media-site .
-docker volume create media-site-data
-docker run -d --name media-site --restart unless-stopped -p 127.0.0.1:3000:3000 -e DB_PATH=/app/data/messages.db -v media-site-data:/app/data media-site
-```
-
-这会把服务仅绑定到服务器本机的 `127.0.0.1:3000`，然后由 HTTPS 反向代理转发访问。请将域名和 TLS 证书配置在反向代理中，不要直接通过 HTTP 对外提供咨询表单。确认代理层数后，才在启动容器时添加 `-e TRUST_PROXY=准确的跳数`；有咨询记录查询需求时，还可以添加 `-e CONTACT_ADMIN_TOKEN=你的随机令牌`。这些环境变量是密钥，不要把真实值发到公开渠道。
-
-在服务器上运行 `curl http://127.0.0.1:3000/api/health`，看到 `ok:true` 即表示服务已启动。SQLite 数据保存在 Docker 卷 `media-site-data` 中；更新容器时保留这个卷，记录就不会随容器删除而丢失。更新步骤：重新运行 `docker build -t media-site .`，然后停止并删除旧容器，再用上面的 `docker run` 命令启动新容器。
-
-### 常见问题
-
-- **打开网站显示 502 / 无法连接：** 查看云平台部署日志，确认构建成功、启动命令是 `npm start`，并且实例已运行。
-- **表单提交失败：** 确认部署的是 Web Service 而不是静态站点；打开 `/api/health` 检查后端是否可用。
-- **重启后咨询记录消失：** `DB_PATH` 没有指向持久化磁盘，或 Docker 启动时没有挂载 `media-site-data` 卷。
-- **记录查询返回 503：** 设置 `CONTACT_ADMIN_TOKEN`，值至少 32 个字符，然后重新部署。
-- **限流似乎把所有访客算在一起：** 应用位于反向代理后时，按平台文档配置正确的 `TRUST_PROXY` 跳数。
-- **GitHub Pages 表单看起来提交成功：** 这是体验版的模拟交互，不会发送或保存数据；正式收集咨询请改用上面的 Node.js 云平台或 Docker 部署。
-- **GitHub Pages 部署失败并提示 404：** 检查仓库 `Settings → Pages → Build and deployment → Source` 是否设置为 `GitHub Actions`，然后从 `Actions` 页面重新运行 `Deploy GitHub Pages Demo`。
+所有部署操作、GitHub 设置、环境变量、更新与故障排查步骤见[完整部署手册](DEPLOYMENT.md)。
 
 ## GitHub Actions
 
-push 到 `main` 会运行 `Build Check` 构建校验，并运行 `Deploy GitHub Pages Demo` 更新静态体验站。Node 后端无法运行在 GitHub Pages 上，正式部署请使用上面的 Node.js 云平台或 Docker 方式。
+push 到 `main` 会运行 `Build Check` 构建校验，并运行 `Deploy GitHub Pages Demo` 更新静态体验站。Node 后端无法运行在 GitHub Pages 上，正式部署请按[完整部署手册](DEPLOYMENT.md)操作。
 
 ## 替换占位内容（重要）
 
